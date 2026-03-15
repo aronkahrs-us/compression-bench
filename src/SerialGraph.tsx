@@ -25,6 +25,10 @@ function hasWebSerial(): boolean {
   return typeof navigator !== "undefined" && !!navigator.serial;
 }
 
+function formatValue(value: number | null | undefined, digits = 3): string {
+  return Number.isFinite(value) ? Number(value).toFixed(digits) : "--";
+}
+
 export default function SerialGraph() {
   const [supported] = useState(hasWebSerial());
   const [connected, setConnected] = useState(false);
@@ -38,6 +42,11 @@ export default function SerialGraph() {
 
   const bufferRef = useRef("");
   const [points, setPoints] = useState<{x:number;y:number}[]>([]);
+
+  const latestPoint = points[points.length - 1];
+  const maxLoad = points.length ? Math.max(...points.map((point) => point.y)) : undefined;
+  const displacementSpan =
+    points.length > 1 ? points[points.length - 1].x - points[0].x : undefined;
 
   useEffect(() => {
     return () => {
@@ -156,7 +165,8 @@ export default function SerialGraph() {
         const parts = payload.split(",").map(s => s.trim());
         if (parts.length >= 2) {
           const x = Number(parts[0]);
-          const y = Number(parts[1]);
+          let y = Number(parts[1]);
+          y = (y*9.81) /1000; // convert to kN
           if (Number.isFinite(x) && Number.isFinite(y)) {
             setPoints((points) => [...points, { x, y }]);
             // NOTE: ref won't re-render chart; see note below
@@ -179,84 +189,221 @@ export default function SerialGraph() {
 
   if (!supported) {
     return (
-      <div>
-        <h2>Compression Stand</h2>
-        <p>
-          This browser doesn't support the Web Serial API. Try Chrome or Edge on desktop.
-        </p>
-      </div>
+      <main className="app-shell unsupported-shell">
+        <section className="hero-panel">
+          <div className="eyebrow">Laboratory Instrument Interface</div>
+          <h1>Compression Bench</h1>
+          <p className="hero-copy">
+            This workstation requires Web Serial support. Open it in a current desktop build of Chrome or Edge.
+          </p>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div style={{ fontFamily: "system-ui", maxWidth: 900 }}>
-      <h2>Compression Stand</h2>
+    <main className="app-shell">
+      <section className="hero-panel">
+        <div className="hero-heading-row">
+          <div>
+            <h1>Compression Bench</h1>
+            <p className="hero-copy">
+              Real-time load and displacement acquisition for controlled bench measurements.
+            </p>
+          </div>
+          <div className={`status-pill ${connected ? "online" : "offline"}`}>
+            <span className="status-dot" />
+            {connected ? "Port connected" : "Port idle"}
+          </div>
+        </div>
+      </section>
 
-      <div>
-        <Line
-          data={{
-            labels: points.map(point => point.x),
-            datasets: [
-              {
-                label: 'Series 1',
-                data: points.map(point => point.y),
-              },
-            ],
-          }}
-        />
-      </div>
+      <section className="workspace-grid">
+        <div className="surface chart-surface">
+          <div className="surface-header">
+            <div>
+              <span className="section-kicker">Acquisition Curve</span>
+              <h2>Measurement Trace</h2>
+            </div>
+            <span className="surface-meta">Load vs displacement</span>
+          </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        {!connected ? (
-        <>
-          <select name="baudRate" id="baudRate" value={baudRate} onChange={(e) => setBaudRate(Number(e.target.value))}>
-            <option value={9600}>9600</option>
-            <option value={19200}>19200</option>
-            <option value={38400}>38400</option>
-            <option value={57600}>57600</option>
-            <option value={115200}>115200</option>
-          </select>
-          <button onClick={connect}>Connect</button>
-        </>
-        ) : (
-          <button onClick={() => void disconnect()}>Disconnect</button>
-        )}
-        <button onClick={() => (setLog(""),setPoints([]))}>Clear</button>
-      </div>
+          <div className="chart-summary-grid">
+            <article className="summary-chip primary">
+              <span className="metric-label">Load</span>
+              <strong className="summary-value">{formatValue(latestPoint?.y)}</strong>
+              <span className="metric-unit">kN</span>
+            </article>
+            <article className="summary-chip">
+              <span className="metric-label">Displacement</span>
+              <strong className="summary-value">{formatValue(latestPoint?.x)}</strong>
+              <span className="metric-unit">mm</span>
+            </article>
+            <article className="summary-chip">
+              <span className="metric-label">Peak</span>
+              <strong className="summary-value">{formatValue(maxLoad)}</strong>
+              <span className="metric-unit">kN</span>
+            </article>
+            <article className="summary-chip">
+              <span className="metric-label">Travel</span>
+              <strong className="summary-value">{formatValue(displacementSpan)}</strong>
+              <span className="metric-unit">mm</span>
+            </article>
+            <article className="summary-chip">
+              <span className="metric-label">Samples</span>
+              <strong className="summary-value">{points.length}</strong>
+              <span className="metric-unit">pts</span>
+            </article>
+          </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        <button onClick={() => void send("start")} disabled={!connected}>
-          Start
-        </button>
-        <button onClick={() => void send("stop")} disabled={!connected}>
-          Stop
-        </button>
-        <button onClick={() => void send("tare")} disabled={!connected}>
-          Tare
-        </button>
-        <button onClick={() => void send("steptest")} disabled={!connected}>
-          Step Test
-        </button>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-        
-        <button onClick={() => void save()} disabled={!connected}>
-          Save
-        </button>
-      </div>
+          <div className="chart-frame">
+            <Line
+              data={{
+                labels: points.map((point) => point.x),
+                datasets: [
+                  {
+                    label: "Load",
+                    data: points.map((point) => point.y),
+                    borderColor: "#0f5f52",
+                    backgroundColor: "rgba(15, 95, 82, 0.12)",
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.18,
+                    pointRadius: 0,
+                    pointHitRadius: 10,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                  legend: {
+                    display: false,
+                  },
+                  tooltip: {
+                    backgroundColor: "#15211d",
+                    titleColor: "#f3f6f4",
+                    bodyColor: "#d5ddda",
+                    borderColor: "rgba(255, 255, 255, 0.12)",
+                    borderWidth: 1,
+                    displayColors: false,
+                    callbacks: {
+                      title(items) {
+                        return `Displacement ${items[0]?.label ?? "--"} mm`;
+                      },
+                      label(context) {
+                        return `Load ${formatValue(context.parsed.y)} kN`;
+                      },
+                    },
+                  },
+                },
+                scales: {
+                  x: {
+                    title: {
+                      display: true,
+                      text: "Displacement (mm)",
+                    },
+                    grid: {
+                      color: "rgba(14, 31, 26, 0.08)",
+                    },
+                    ticks: {
+                      color: "#5d6864",
+                    },
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: "Load (kN)",
+                    },
+                    grid: {
+                      color: "rgba(14, 31, 26, 0.08)",
+                    },
+                    ticks: {
+                      color: "#5d6864",
+                    },
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
 
-      <pre
-        style={{
-          background: "#111",
-          color: "#0f0",
-          padding: 12,
-          height: 320,
-          overflow: "auto",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {log || "(no data yet)"}
-      </pre>
-    </div>
+        <div className="support-grid">
+          <div className="surface control-surface">
+            <div className="surface-header compact">
+              <div>
+                <span className="section-kicker">Connection</span>
+                <h2>Instrument Control</h2>
+              </div>
+            </div>
+
+            <label className="field-label" htmlFor="baudRate">
+              Serial baud rate
+            </label>
+            <div className="control-row">
+              <select
+                name="baudRate"
+                id="baudRate"
+                className="select-input"
+                value={baudRate}
+                onChange={(e) => setBaudRate(Number(e.target.value))}
+              >
+                <option value={9600}>9600</option>
+                <option value={19200}>19200</option>
+                <option value={38400}>38400</option>
+                <option value={57600}>57600</option>
+                <option value={115200}>115200</option>
+              </select>
+
+              {!connected ? (
+                <button className="button primary-button" onClick={connect}>
+                  Connect
+                </button>
+              ) : (
+                <button className="button" onClick={() => void disconnect()}>
+                  Disconnect
+                </button>
+              )}
+            </div>
+
+            <div className="button-grid">
+              <button className="button primary-button" onClick={() => void send("start")} disabled={!connected}>
+                Start
+              </button>
+              <button className="button" onClick={() => void send("stop")} disabled={!connected}>
+                Stop
+              </button>
+              <button className="button" onClick={() => void send("tare")} disabled={!connected}>
+                Tare
+              </button>
+              <button className="button" onClick={() => void send("steptest")} disabled={!connected}>
+                Step Test
+              </button>
+            </div>
+
+            <div className="button-grid secondary-grid">
+              <button className="button subtle-button" onClick={() => (setLog(""), setPoints([]))}>
+                Clear Session
+              </button>
+              <button className="button subtle-button" onClick={() => void save()} disabled={!points.length}>
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div className="surface log-surface">
+            <div className="surface-header compact">
+              <div>
+                <span className="section-kicker">Stream Monitor</span>
+                <h2>Serial Log</h2>
+              </div>
+            </div>
+            <pre className="log-panel">{log || "Awaiting incoming data stream."}</pre>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
