@@ -21,6 +21,8 @@ ChartJS.register(
   Filler
 );
 
+const BAUD_RATES = [9600, 19200, 38400, 57600, 115200] as const;
+
 function hasWebSerial(): boolean {
   return typeof navigator !== "undefined" && !!navigator.serial;
 }
@@ -34,11 +36,13 @@ export default function SerialGraph() {
   const [connected, setConnected] = useState(false);
   const [log, setLog] = useState<string>("");
   const [baudRate, setBaudRate] = useState(115200);
+  const [isBaudMenuOpen, setIsBaudMenuOpen] = useState(false);
 
   const portRef = useRef<SerialPort | null>(null);
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const writerRef = useRef<WritableStreamDefaultWriter<Uint8Array> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const baudMenuRef = useRef<HTMLDivElement | null>(null);
 
   const bufferRef = useRef("");
   const [points, setPoints] = useState<{x:number;y:number}[]>([]);
@@ -55,6 +59,32 @@ export default function SerialGraph() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!isBaudMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!baudMenuRef.current?.contains(event.target as Node)) {
+        setIsBaudMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsBaudMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isBaudMenuOpen]);
 
   async function connect() {
     if (!navigator.serial) {
@@ -222,8 +252,7 @@ export default function SerialGraph() {
         <div className="surface chart-surface">
           <div className="surface-header">
             <div>
-              <span className="section-kicker">Acquisition Curve</span>
-              <h2>Measurement Trace</h2>
+              <span className="section-kicker">Measurement</span>
             </div>
             <span className="surface-meta">Load vs displacement</span>
           </div>
@@ -335,7 +364,6 @@ export default function SerialGraph() {
             <div className="surface-header compact">
               <div>
                 <span className="section-kicker">Connection</span>
-                <h2>Instrument Control</h2>
               </div>
             </div>
 
@@ -343,19 +371,42 @@ export default function SerialGraph() {
               Serial baud rate
             </label>
             <div className="control-row">
-              <select
-                name="baudRate"
-                id="baudRate"
-                className="select-input"
-                value={baudRate}
-                onChange={(e) => setBaudRate(Number(e.target.value))}
+              <div
+                ref={baudMenuRef}
+                className={`select-shell ${isBaudMenuOpen ? "open" : ""}`}
               >
-                <option value={9600}>9600</option>
-                <option value={19200}>19200</option>
-                <option value={38400}>38400</option>
-                <option value={57600}>57600</option>
-                <option value={115200}>115200</option>
-              </select>
+                <button
+                  type="button"
+                  id="baudRate"
+                  className="select-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded={isBaudMenuOpen}
+                  aria-label="Serial baud rate"
+                  onClick={() => setIsBaudMenuOpen((open) => !open)}
+                >
+                  <span className="select-value">{baudRate}</span>
+                </button>
+
+                {isBaudMenuOpen ? (
+                  <div className="select-menu" role="listbox" aria-label="Serial baud rate options">
+                    {BAUD_RATES.map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        role="option"
+                        aria-selected={baudRate === rate}
+                        className={`select-option ${baudRate === rate ? "selected" : ""}`}
+                        onClick={() => {
+                          setBaudRate(rate);
+                          setIsBaudMenuOpen(false);
+                        }}
+                      >
+                        {rate}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
 
               {!connected ? (
                 <button className="button primary-button" onClick={connect}>
@@ -396,8 +447,7 @@ export default function SerialGraph() {
           <div className="surface log-surface">
             <div className="surface-header compact">
               <div>
-                <span className="section-kicker">Stream Monitor</span>
-                <h2>Serial Log</h2>
+                <span className="section-kicker">Serial Monitor</span>
               </div>
             </div>
             <pre className="log-panel">{log || "Awaiting incoming data stream."}</pre>
