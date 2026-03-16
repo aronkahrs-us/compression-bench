@@ -196,7 +196,7 @@ export default function SerialGraph() {
         if (parts.length >= 2) {
           const x = Number(parts[2]);
           let y = Number(parts[1]);
-          y = (y*9.81) /1000; // convert to kN
+          y = (y*9.81); // convert to kN
           if (Number.isFinite(x) && Number.isFinite(y)) {
             setPoints((points) => [...points, { x, y }]);
             // NOTE: ref won't re-render chart; see note below
