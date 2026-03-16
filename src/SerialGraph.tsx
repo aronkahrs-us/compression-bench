@@ -194,7 +194,7 @@ export default function SerialGraph() {
         const payload = line.slice("reading:".length).trim(); // "0.2, 1.8"
         const parts = payload.split(",").map(s => s.trim());
         if (parts.length >= 2) {
-          const x = Number(parts[0]);
+          const x = Number(parts[2]);
           let y = Number(parts[1]);
           y = (y*9.81) /1000; // convert to kN
           if (Number.isFinite(x) && Number.isFinite(y)) {
