@@ -239,6 +239,8 @@ p {
 
 .control-surface {
   min-width: 0;
+  position: relative;
+  z-index: 3;
 }
 
 .support-grid {
@@ -253,6 +255,8 @@ p {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .field-label {
