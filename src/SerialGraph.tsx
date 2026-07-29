@@ -46,11 +46,10 @@ export default function SerialGraph() {
 
   const bufferRef = useRef("");
   const [points, setPoints] = useState<{x:number;y:number}[]>([]);
+  const [data, setData] = useState<{time:number,mass:number;disp:number;angle:number}[]>([]); // for chart; updated on disconnect to freeze data
 
-  const latestPoint = points[points.length - 1];
+  const latestPoint = data[data.length - 1];
   const maxLoad = points.length ? Math.max(...points.map((point) => point.y)) : undefined;
-  const displacementSpan =
-    points.length > 1 ? points[points.length - 1].x - points[0].x : undefined;
 
   useEffect(() => {
     return () => {
@@ -194,11 +193,14 @@ export default function SerialGraph() {
         const payload = line.slice("reading:".length).trim(); // "0.2, 1.8"
         const parts = payload.split(",").map(s => s.trim());
         if (parts.length >= 2) {
-          const x = Number(parts[0]);
+          const t = Number(parts[0]);
+          const x = Number(parts[2]);
           let y = Number(parts[1]);
-          y = (y*9.81) /1000; // convert to kN
+          const angle = Number(parts[3] ?? 0);
+          y = (y*9.81); // convert to kN
           if (Number.isFinite(x) && Number.isFinite(y)) {
             setPoints((points) => [...points, { x, y }]);
+            setData((data) => [...data, {time: t, mass: y, disp: x, angle: angle}]);
             // NOTE: ref won't re-render chart; see note below
           }
         }
@@ -260,12 +262,12 @@ export default function SerialGraph() {
           <div className="chart-summary-grid">
             <article className="summary-chip primary">
               <span className="metric-label">Load</span>
-              <strong className="summary-value">{formatValue(latestPoint?.y)}</strong>
+              <strong className="summary-value">{formatValue(latestPoint?.mass*9.81)}</strong>
               <span className="metric-unit">kN</span>
             </article>
             <article className="summary-chip">
               <span className="metric-label">Displacement</span>
-              <strong className="summary-value">{formatValue(latestPoint?.x)}</strong>
+              <strong className="summary-value">{formatValue(latestPoint?.disp)}</strong>
               <span className="metric-unit">mm</span>
             </article>
             <article className="summary-chip">
@@ -274,13 +276,13 @@ export default function SerialGraph() {
               <span className="metric-unit">kN</span>
             </article>
             <article className="summary-chip">
-              <span className="metric-label">Travel</span>
-              <strong className="summary-value">{formatValue(displacementSpan)}</strong>
-              <span className="metric-unit">mm</span>
+              <span className="metric-label">Angle</span>
+              <strong className="summary-value">{formatValue(latestPoint?.angle)}</strong>
+              <span className="metric-unit">°</span>
             </article>
             <article className="summary-chip">
               <span className="metric-label">Samples</span>
-              <strong className="summary-value">{points.length}</strong>
+              <strong className="summary-value">{points.length? points.length : "--"}</strong>
               <span className="metric-unit">pts</span>
             </article>
           </div>
