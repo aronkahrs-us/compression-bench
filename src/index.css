@@ -243,7 +243,6 @@ p {
   z-index: 3;
   overflow: visible;
 }
-
 .support-grid {
   display: grid;
   grid-template-columns: 1fr;
