@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+title: "Compression Bench: A Digitally Controlled Compression Rig for Granular Media"
+message: "If you use this software, please cite it using the metadata from this file."
+type: software
+
+authors:
+  - family-names: Kahrs
+    given-names: Aron
+    affiliation: Instituto de Física, Facultad de Ciencias, Universidad de la República, Montevideo, Uruguay
+    orcid: "https://orcid.org/0009-0000-0745-3254"
+
+version: "1.0.0"
+date-released: "2026-07-29"
+
+repository-code: "https://github.com/AronKahrs-US/compression-bench"
+url: "https://aronkahrs-us.github.io/compression-bench"
+
+abstract: >
+  Compression Bench is an open-source software package for controlling
+  a digitally actuated compression rig used for the mechanical
+  characterization of granular media. The software provides experiment
+  configuration, real-time monitoring of force and displacement,
+  automated data acquisition, visualization, and communication with an
+  Arduino-based control system.
+
+keywords:
+  - granular media
+  - compression testing
+  - experimental physics
+  - instrumentation
+  - Arduino
+  - load cell
+  - stepper motor
+  - laboratory automation

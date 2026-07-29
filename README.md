@@ -1,75 +1,45 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Currently, two official plugins are available:
+This is an open-source application for controlling a digitally actuated compression rig used in the mechanical characterization of granular media.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The software communicates with an Arduino-based control system to automate compression experiments, acquire force and displacement measurements, and visualize data in real time.
 
-## React Compiler
+## Features
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+* Graphical user interface for experiment control
+* Real-time force and displacement monitoring
+* Communication with an Arduino controller
+* Automated data acquisition
+* Data export for post-processing
+* Designed for reproducible laboratory experiments
 
-Note: This will impact Vite dev & build performances.
+## Hardware
 
-## Expanding the ESLint configuration
+Compression Bench is designed to operate with a custom-built compression rig consisting of:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* Arduino Uno
+* Closed-loop stepper motor
+* Magnetic encoder
+* Load cell with amplifier
+* Motor driver
+* Vertically actuated compression platform
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Citation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+If you use Compression Bench in academic work, please cite the software using the DOI provided by Zenodo.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+A `CITATION.cff` file is included in this repository.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Author
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**Aron Kahrs**
+
+Instituto de Física
+Facultad de Ciencias
+Universidad de la República
+Montevideo, Uruguay
+
+## Acknowledgements
+
+This software was developed as part of ongoing research on the mechanical characterization of granular media at the Universidad de la República.

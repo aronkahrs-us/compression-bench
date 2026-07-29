@@ -239,6 +239,9 @@ p {
 
 .control-surface {
   min-width: 0;
+  position: relative;
+  z-index: 3;
+  overflow: visible;
 }
 
 .support-grid {
@@ -247,12 +250,15 @@ p {
   grid-template-rows: min-content minmax(0, 1fr);
   gap: 16px;
   min-height: 0;
+  overflow: visible;
 }
 
 .log-surface {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .field-label {
@@ -264,6 +270,10 @@ p {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
+}
+
+.select-shell.open {
+  z-index: 5;
 }
 
 .select-shell::before,
@@ -330,7 +340,7 @@ p {
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 200;
   display: grid;
   gap: 4px;
   padding: 8px;

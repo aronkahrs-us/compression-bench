@@ -1,0 +1,25 @@
+{
+  "title": "Compression Bench: A Digitally Controlled Compression Rig for Granular Media",
+  "description": "<p>Compression Bench is an open-source software package for controlling a digitally actuated compression rig used for the mechanical characterization of granular media. The software provides experiment configuration, real-time monitoring of force and displacement, automated data acquisition, visualization, and communication with an Arduino-based control system.</p>",
+  "creators": [
+    {
+      "name": "Kahrs, Aron",
+      "affiliation": "Instituto de Física, Facultad de Ciencias, Universidad de la República, Montevideo, Uruguay",
+      "orcid": "0009-0000-0745-3254"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "granular media",
+    "compression testing",
+    "experimental physics",
+    "Arduino",
+    "load cell",
+    "stepper motor",
+    "instrumentation",
+    "laboratory automation"
+  ],
+  "upload_type": "software",
+  "language": "eng",
+  "access_right": "open"
+}
