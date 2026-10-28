@@ -25,6 +25,10 @@ Compression Bench is designed to operate with a custom-built compression rig con
 * Vertically actuated compression platform
 
 
+## Alternative
+
+A local python GUI is provided in case you need to modify it or the web is not working for you
+
 ## Citation
 
 If you use Compression Bench in academic work, please cite the software using the DOI provided by Zenodo.
